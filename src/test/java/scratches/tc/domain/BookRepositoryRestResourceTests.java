@@ -1,5 +1,6 @@
 package scratches.tc.domain;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.Objects;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -16,10 +19,12 @@ import static org.springframework.http.HttpStatus.CREATED;
 /**
  * @author Rashidi Zin
  */
+@Slf4j
 @Testcontainers
 @SpringBootTest(
         properties = {
                 "spring.jpa.generate-ddl=true",
+                "spring.jpa.show-sql=true",
                 "spring.datasource.url=jdbc:tc:mysql:8:///test"
         },
         webEnvironment = RANDOM_PORT
@@ -37,7 +42,7 @@ public class BookRepositoryRestResourceTests {
         var book = book(author);
 
         ResponseEntity<Book> response = restTemplate.postForEntity("/books", book, Book.class);
-
+        log.info(Objects.requireNonNull(response.getBody()).toString());
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
     }
 
