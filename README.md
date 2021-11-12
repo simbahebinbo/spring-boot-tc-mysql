@@ -1,33 +1,39 @@
-# Spring Boot: MySQL Container Integration 
+# Spring Boot: MySQL Container Integration
+
 Avoid running different databases between integration tests and production.
 
 ![Maven Build](https://github.com/rashidi/spring-boot-tc-mysql/workflows/Maven%20Build/badge.svg?branch=master)
 
 ## Background
-In general, we tend to use [H2][2] to perform integration tests within the application. However there are scenarios 
-where H2 may not give the same outcome as our actual database, such as MySQL. Such scenario is when you have a table 
+
+In general, we tend to use [H2][2] to perform integration tests within the application. However there are scenarios
+where H2 may not give the same outcome as our actual database, such as MySQL. Such scenario is when you have a table
 column called _rank_ or _order_.
 
-Both names are allowed with H2 database but not with MySQL as those are reserved keywords. Therefore it is best to 
-use the same database, in production environment, for our integration tests.
+Both names are allowed with H2 database but not with MySQL as those are reserved keywords. Therefore it is best to use
+the same database, in production environment, for our integration tests.
 
 In this guide, we will implement [MySQL Container][3], from [TestContainers][1], with [Spring Boot][4].
 
 ## Dependencies
+
 Full dependencies can be found in [pom.xml][5].
 
 ### Database
+
 - `spring-boot-starter-data-jpa`
 - `spring-boot-starter-data-rest`
 - `mysql-connector-java`
 
 ### Integration tests
+
 - `junit-jupiter` from TestContainers
 - `mysql` from TestContainers
 
 ## Implementation
 
 ### Entity Class
+
 Given we have a class called [Book][6] along with its repository class, [BookRepository][7].
 
 ```java
@@ -53,10 +59,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 ```
 
 ### Test Implementation
-Here we will be utilizing MySQL module from TestContainers to perform integration tests. The following implementation 
+
+Here we will be utilizing MySQL module from TestContainers to perform integration tests. The following implementation
 can be found in [BookRepositoryRestResourceTests][10]
 
 #### Enable TestContainers
+
 `org.testcontainers:junit-jupiter` dependency simplifies our implementation whereby the dependency will handle the  
 start and stop of the container.
 
@@ -124,8 +132,8 @@ public class BookRepositoryRestResourceTests {
 }
 ```
 
-Execute the test and you will get HTTP `200` or `CREATED` returned. To be certain that our test did run with 
-MySQL Container, we should see the following content in the logs:
+Execute the test and you will get HTTP `200` or `CREATED` returned. To be certain that our test did run with MySQL
+Container, we should see the following content in the logs:
 
 ```shell script
 DEBUG 🐳 [mysql:8] - Starting container: mysql:8
@@ -133,11 +141,12 @@ DEBUG 🐳 [mysql:8] - Starting container: mysql:8
 org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
 ```
 
-This is how the application informing us that it is using MySQL Container which lead to Spring Boot automatically 
+This is how the application informing us that it is using MySQL Container which lead to Spring Boot automatically
 configure our dialect to `MySQL8Dialect`.
 
 ### Verify MySQL availability
-Another option is to verify that our application will connect to MySQL by triggering a check against 
+
+Another option is to verify that our application will connect to MySQL by triggering a check against
 [Spring Boot Actuator Health][11] endpoint.
 
 ```java
@@ -163,21 +172,32 @@ public class DatasourceHealthTests {
 }
 ```
 
-Test above verifies that there's a running MySQL database connected to the application. Full implementation can be 
-found in [DatasourceHealthTests][12].
+Test above verifies that there's a running MySQL database connected to the application. Full implementation can be found
+in [DatasourceHealthTests][12].
 
 ### Conclusion
+
 Now that we are running the same database as production environment, we can expect more accurate results from our
 integration tests.
 
 [1]: https://www.testcontainers.org/
+
 [2]: https://www.h2database.com/html/main.html
+
 [3]: https://www.testcontainers.org/modules/databases/mysql/
+
 [4]: https://spring.io/projects/spring-boot
+
 [5]: pom.xml
+
 [6]: src/main/java/scratches/tc/domain/Book.java
+
 [7]: src/main/java/scratches/tc/domain/BookRepository.java
+
 [9]: https://docs.spring.io/spring-framework/docs/5.2.5.RELEASE/spring-framework-reference/testing.html#testcontext-ctx-management-dynamic-property-sources
+
 [10]: src/test/java/scratches/tc/domain/BookRepositoryRestResourceTests.java
+
 [11]: https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-health
+
 [12]: src/test/java/scratches/tc/health/DatasourceHealthTests.java
